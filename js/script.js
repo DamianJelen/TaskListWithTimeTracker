@@ -16,6 +16,20 @@ function apiListTasks() {
         });
 }
 
+function apiListOperationsForTask(taskId) {
+    return fetch(
+        apihost + '/api/tasks/' + taskId + '/operations',
+        {
+            headers: {Authorization: apikey}
+        }
+    ).then((resp) => {
+        if (!resp.ok) {
+            alert('Problem z wczytaniem operacji!!!');
+        }
+        return resp.json();
+    })
+}
+
 function apiCreateTask(title, description) {
     return fetch(
         apihost + '/api/tasks',
