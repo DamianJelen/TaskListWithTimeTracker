@@ -55,8 +55,27 @@
         <button class="btn btn-outline-danger btn-sm ml-2">Delete</button>
       </div>
     </div>
-    <div>
-      &lt;!&ndash; dalsza część sekcji: lista operacji i formularz dodawania operacji &ndash;&gt;
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div>Learn about response
+          <span class="badge badge-success badge-pill ml-2">0m</span>
+        </div>
+        <div class="js-task-open-only">
+          <button class="btn btn-outline-success btn-sm mr-2">+15m</button>
+          <button class="btn btn-outline-success btn-sm mr-2">+1h</button>
+          <button class="btn btn-outline-danger btn-sm">Delete</button>
+        </div>
+      </li>
+    </ul>
+    <div class="card-body js-task-open-only">
+      <form>
+        <div class="input-group">
+          <input type="text" placeholder="Operation description" minlength="5" class="form-control">
+          <div class="input-group-append">
+            <button class="btn btn-info">Add</button>
+          </div>
+        </div>
+      </form>
     </div>
   </section>
 -->

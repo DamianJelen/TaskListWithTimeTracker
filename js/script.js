@@ -1,4 +1,5 @@
 const apikey = "37b5e7e3-6711-46ec-91fd-b84438a96cf1";
+// const apikey = "f73c024f-a6aa-4b85-a709-6b2846ff296a";
 const apihost = 'https://todo-api.coderslab.pl';
 
 function apiListTasks() {
@@ -82,6 +83,34 @@ function renderTask(taskId, title, description, status) {
     headerBtnDel.innerText = 'Delete';
     headerBtnDiv.appendChild(headerBtnDel);
 
+    // input Operations in section
+    const inputOperationDiv = document.createElement('div');
+    inputOperationDiv.className = 'card-body js-task-open-only';
+    section.appendChild(inputOperationDiv);
+
+    const inputOperationForm = document.createElement('form');
+    inputOperationDiv.appendChild(inputOperationForm);
+
+    const divInputGroup = document.createElement('div');
+    divInputGroup.className = 'input-group';
+    inputOperationForm.appendChild(divInputGroup);
+
+    const inputOperation = document.createElement('input');
+    inputOperation.className = 'form-control';
+    inputOperation.setAttribute('type','text');
+    inputOperation.setAttribute('placeholder','Operation description');
+    inputOperation.setAttribute('minlength','5');
+    divInputGroup.appendChild(inputOperation);
+
+    const divInputGroupAppend = document.createElement('div');
+    divInputGroupAppend.className = 'input-group-append';
+    divInputGroup.appendChild(divInputGroupAppend);
+
+    const btnInputGroupAppend = document.createElement("button");
+    btnInputGroupAppend.className = 'btn btn-info';
+    btnInputGroupAppend.innerText = 'Add';
+    divInputGroupAppend.appendChild(btnInputGroupAppend);
+
     document.querySelector('main').appendChild(section);
 }
 
@@ -92,9 +121,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     })
 })
-
-
-
 
 
 
