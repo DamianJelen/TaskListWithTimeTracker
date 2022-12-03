@@ -54,6 +54,7 @@ function renderTask(taskId, title, description, status) {
     // console.log('status to:', status);
     const section = document.createElement('section');
     section.className = 'card mt-5 shadow-sm';
+    section.id = taskId;
 
     const headerDiv = document.createElement('div');
     headerDiv.className = 'card-header d-flex justify-content-between align-items-center';
@@ -82,6 +83,17 @@ function renderTask(taskId, title, description, status) {
     headerBtnDel.className = 'btn btn-outline-danger btn-sm ml-2';
     headerBtnDel.innerText = 'Delete';
     headerBtnDiv.appendChild(headerBtnDel);
+
+    // ul list operations
+    const ulListGroup = document.createElement('ul');
+    ulListGroup.className = 'list-group list-group-flush';
+    section.appendChild(ulListGroup);
+
+    apiListOperationsForTask(taskId).then(operations => {
+        operations.data.forEach(operation => {
+            renderOperation(ulListGroup, status, operation.id, operation.description, operation.timeSpent);
+        })
+    })
 
     // input Operations in section
     const inputOperationDiv = document.createElement('div');
@@ -112,6 +124,40 @@ function renderTask(taskId, title, description, status) {
     divInputGroupAppend.appendChild(btnInputGroupAppend);
 
     document.querySelector('main').appendChild(section);
+}
+
+function renderOperation(ulEl, taskStatus, operationId, operationDescription, timeSpent) {
+    const li = document.createElement('li');
+    li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    ulEl.appendChild(li);
+
+    const divOperationDescription = document.createElement('div');
+    divOperationDescription.innerText = operationDescription;
+    li.appendChild(divOperationDescription);
+
+    const spanOperationDescription = document.createElement('span');
+    spanOperationDescription.className = 'badge badge-success badge-pill ml-2';
+    spanOperationDescription.innerText = '0m';
+    divOperationDescription.appendChild(spanOperationDescription);
+
+    const divOperationBtn = document.createElement('div');
+    divOperationBtn.className = 'js-task-open-only';
+    li.appendChild(divOperationBtn);
+
+    const btn15m = document.createElement('button');
+    btn15m.className = 'btn btn-outline-success btn-sm mr-2';
+    btn15m.innerText = '+15m';
+    divOperationBtn.appendChild(btn15m);
+
+    const btn1h = document.createElement('button');
+    btn1h.className = 'btn btn-outline-success btn-sm mr-2';
+    btn1h.innerText = '+1h';
+    divOperationBtn.appendChild(btn1h);
+
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn btn-outline-danger btn-sm';
+    btnDel.innerText = 'Delete';
+    divOperationBtn.appendChild(btnDel);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
