@@ -47,6 +47,21 @@ function apiCreateTask(title, description) {
         });
 }
 
+function apiCreateOperation(taskId, description) {
+    return fetch(
+        apihost + '/api/tasks/' + taskId + '/operations',
+        {
+                headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+                body: JSON.stringify({description: description, timeSpent: '0'}),
+                method: 'POST'
+            }).then(function (resp) {
+                if (!resp.ok) {
+                    alert('Wystapił błąd podczas dodawania operacji do zadania!!!');
+                }
+                return resp.json();
+            });
+}
+
 function renderTask(taskId, title, description, status) {
     // console.log('Zadanie o id =', taskId);
     // console.log('tytuł to:', title);
@@ -83,6 +98,9 @@ function renderTask(taskId, title, description, status) {
     headerBtnDel.className = 'btn btn-outline-danger btn-sm ml-2';
     headerBtnDel.innerText = 'Delete';
     headerBtnDiv.appendChild(headerBtnDel);
+    headerBtnDel.addEventListener('click', () => {
+        console.log(taskId, title);
+    })
 
     // ul list operations
     const ulListGroup = document.createElement('ul');
@@ -122,6 +140,15 @@ function renderTask(taskId, title, description, status) {
     btnInputGroupAppend.className = 'btn btn-info';
     btnInputGroupAppend.innerText = 'Add';
     divInputGroupAppend.appendChild(btnInputGroupAppend);
+    btnInputGroupAppend.addEventListener('click', (event) => {
+        apiCreateOperation(taskId, inputOperation.value).then(
+            function (response) {
+                renderOperation(ulListGroup, status, response.data.id, response.data.description, response.data.timeSpent);
+            }
+        );
+        inputOperation.value = null;
+        event.preventDefault();
+    })
 
     document.querySelector('main').appendChild(section);
 }
@@ -129,6 +156,7 @@ function renderTask(taskId, title, description, status) {
 function renderOperation(ulEl, taskStatus, operationId, operationDescription, timeSpent) {
     const li = document.createElement('li');
     li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    li.id = operationId;
     ulEl.appendChild(li);
 
     const divOperationDescription = document.createElement('div');
@@ -137,7 +165,7 @@ function renderOperation(ulEl, taskStatus, operationId, operationDescription, ti
 
     const spanOperationDescription = document.createElement('span');
     spanOperationDescription.className = 'badge badge-success badge-pill ml-2';
-    spanOperationDescription.innerText = '0m';
+    spanOperationDescription.innerText = timeSpent;
     divOperationDescription.appendChild(spanOperationDescription);
 
     const divOperationBtn = document.createElement('div');
@@ -158,6 +186,9 @@ function renderOperation(ulEl, taskStatus, operationId, operationDescription, ti
     btnDel.className = 'btn btn-outline-danger btn-sm';
     btnDel.innerText = 'Delete';
     divOperationBtn.appendChild(btnDel);
+    btnDel.addEventListener('click', () => {
+        console.log(operationId, operationDescription);
+    })
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -166,6 +197,22 @@ document.addEventListener('DOMContentLoaded', function() {
             renderTask(task.id, task.title, task.description, task.status);
         })
     })
+
+    const btnAddTask = document.querySelector('form.js-task-adding-form');
+    btnAddTask.addEventListener('submit', function(event){
+        event.preventDefault();
+        apiCreateTask(event.target.elements.title.value, event.target.elements.description.value);
+    })
+
+    document.querySelector('.js-task-adding-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        apiCreateTask(event.target.elements.title.value, event.target.elements.description.value).then(
+            function(response) { renderTask(response.data.id, response.data.title, response.data.description, response.data.status) }
+        )
+        event.target.elements.title.value = null;
+        event.target.elements.description.value = null;
+    });
+
 })
 
 
