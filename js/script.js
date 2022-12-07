@@ -62,6 +62,35 @@ function apiCreateOperation(taskId, description) {
             });
 }
 
+function apiDeleteOperation(operationId) {
+    return fetch(
+        apihost + '/api/operations/' + operationId,
+        {
+            headers: {Authorization: apikey},
+            method: 'DELETE'
+        }).then(function (resp) {
+           if (!resp.ok) {
+               alert('Wystapił błąd podczas dodawania operacji do zadania!!!');
+           }
+           return 'Usunieto operacje o id: ' + operationId;
+        });
+}
+
+function apiUpdateOperation(operationId, description, timeSpent) {
+    return fetch(
+        apihost + '/api/operations/' + operationId,
+        {
+                headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+                body: JSON.stringify({description: description, timeSpent: timeSpent}),
+                method: 'PUT'
+        }).then((response) => {
+            if (!response.ok) {
+                alert('Wystapił błąd podczas modyfikacji czasu operacji!!!');
+            }
+            return response.json();
+        });
+}
+
 function renderTask(taskId, title, description, status) {
     // console.log('Zadanie o id =', taskId);
     // console.log('tytuł to:', title);
@@ -165,7 +194,7 @@ function renderOperation(ulEl, taskStatus, operationId, operationDescription, ti
 
     const spanOperationDescription = document.createElement('span');
     spanOperationDescription.className = 'badge badge-success badge-pill ml-2';
-    spanOperationDescription.innerText = timeSpent;
+    spanOperationDescription.innerText = showHourMinutes(timeSpent);
     divOperationDescription.appendChild(spanOperationDescription);
 
     const divOperationBtn = document.createElement('div');
@@ -176,18 +205,32 @@ function renderOperation(ulEl, taskStatus, operationId, operationDescription, ti
     btn15m.className = 'btn btn-outline-success btn-sm mr-2';
     btn15m.innerText = '+15m';
     divOperationBtn.appendChild(btn15m);
+    btn15m.addEventListener('click', function() {
+        let newTime = parseInt(timeSpent) + 15;
+        apiUpdateOperation(operationId, operationDescription, newTime).then((response) => {
+            btn15m.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
+            timeSpent = newTime;
+        });
+    });
 
     const btn1h = document.createElement('button');
     btn1h.className = 'btn btn-outline-success btn-sm mr-2';
     btn1h.innerText = '+1h';
     divOperationBtn.appendChild(btn1h);
+    btn1h.addEventListener('click', function() {
+        apiUpdateOperation(operationId, operationDescription, timeSpent + 60).then((response) => {
+            btn1h.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
+            timeSpent = parseInt(timeSpent) + 60;
+        });
+    });
 
     const btnDel = document.createElement('button');
     btnDel.className = 'btn btn-outline-danger btn-sm';
     btnDel.innerText = 'Delete';
     divOperationBtn.appendChild(btnDel);
     btnDel.addEventListener('click', () => {
-        console.log(operationId, operationDescription);
+        apiDeleteOperation(operationId);
+        btnDel.parentElement.parentElement.remove();
     })
 }
 
@@ -215,7 +258,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 })
 
-
+function showHourMinutes(minutes) {
+    if (minutes > 60) {
+        let hour = parseInt(minutes / 60);
+        minutes = minutes % 60;
+        return hour + 'h ' + minutes + 'm';
+    } else if (minutes < 60) {
+        return minutes + 'm';
+    }
+}
 
 
 
