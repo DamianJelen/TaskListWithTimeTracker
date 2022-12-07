@@ -62,6 +62,20 @@ function apiCreateOperation(taskId, description) {
             });
 }
 
+function apiDeleteTask(taskId) {
+    return fetch(
+        apihost + '/api/tasks/' + taskId,
+        {
+            headers: {Authorization: apikey},
+            method: 'DELETE'
+        }).then((resp) => {
+            if(!resp.ok) {
+                alert('Wystapił błąd podczas usuwania zadania!!!');
+            }
+            return 'Usunięto zadanie o id: ' + taskId;
+        });
+}
+
 function apiDeleteOperation(operationId) {
     return fetch(
         apihost + '/api/operations/' + operationId,
@@ -128,8 +142,13 @@ function renderTask(taskId, title, description, status) {
     headerBtnDel.innerText = 'Delete';
     headerBtnDiv.appendChild(headerBtnDel);
     headerBtnDel.addEventListener('click', () => {
-        console.log(taskId, title);
-    })
+        apiListOperationsForTask(taskId).then((operations) => {
+            operations.data.forEach(operation => apiDeleteOperation(operation.id));
+        });
+        apiDeleteTask(taskId).then(() => {
+            headerBtnDel.parentElement.parentElement.parentElement.remove();
+        });
+    });
 
     // ul list operations
     const ulListGroup = document.createElement('ul');
