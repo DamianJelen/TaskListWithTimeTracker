@@ -90,6 +90,21 @@ function apiDeleteOperation(operationId) {
         });
 }
 
+function apiUpdateTask(taskId, title, description) {
+    return fetch(
+        apihost + "/api/tasks/" + taskId,
+        {
+            headers: {Authorization: apikey, 'Content-Type': 'application/json'},
+            body: JSON.stringify({title: title, description: description, status: 'close'}),
+            method: 'PUT'
+            }).then((resp) => {
+                if(!resp.ok) {
+                    alert('Wystąpił błąd podczas zamykania zadania!!!');
+                }
+                return resp.json();
+            });
+}
+
 function apiUpdateOperation(operationId, description, timeSpent) {
     return fetch(
         apihost + '/api/operations/' + operationId,
@@ -136,6 +151,17 @@ function renderTask(taskId, title, description, status) {
     headerBtnFinish.className = 'btn btn-dark btn-sm js-task-open-only';
     headerBtnFinish.innerText = 'Finish'
     headerBtnDiv.appendChild(headerBtnFinish);
+    headerBtnFinish.addEventListener('click', () => {
+        apiUpdateTask(taskId, title, description).then((resp) => {
+            // status = resp.data.status;
+            console.log(taskId, resp.data.status);
+        });
+        // headerBtnFinish.parentElement.parentElement.parentElement.lastElementChild.remove();
+        // let liElements = headerBtnFinish.parentElement.parentElement.nextElementSibling.childNodes;
+        // liElements.forEach(elem => {
+        //     console.log(elem.querySelector('div.js-task-open-only').remove());
+        // });
+    });
 
     const headerBtnDel = document.createElement('button');
     headerBtnDel.className = 'btn btn-outline-danger btn-sm ml-2';
@@ -162,41 +188,43 @@ function renderTask(taskId, title, description, status) {
     })
 
     // input Operations in section
-    const inputOperationDiv = document.createElement('div');
-    inputOperationDiv.className = 'card-body js-task-open-only';
-    section.appendChild(inputOperationDiv);
+    if (status === 'open') {
+        const inputOperationDiv = document.createElement('div');
+        inputOperationDiv.className = 'card-body js-task-open-only';
+        section.appendChild(inputOperationDiv);
 
-    const inputOperationForm = document.createElement('form');
-    inputOperationDiv.appendChild(inputOperationForm);
+        const inputOperationForm = document.createElement('form');
+        inputOperationDiv.appendChild(inputOperationForm);
 
-    const divInputGroup = document.createElement('div');
-    divInputGroup.className = 'input-group';
-    inputOperationForm.appendChild(divInputGroup);
+        const divInputGroup = document.createElement('div');
+        divInputGroup.className = 'input-group';
+        inputOperationForm.appendChild(divInputGroup);
 
-    const inputOperation = document.createElement('input');
-    inputOperation.className = 'form-control';
-    inputOperation.setAttribute('type','text');
-    inputOperation.setAttribute('placeholder','Operation description');
-    inputOperation.setAttribute('minlength','5');
-    divInputGroup.appendChild(inputOperation);
+        const inputOperation = document.createElement('input');
+        inputOperation.className = 'form-control';
+        inputOperation.setAttribute('type', 'text');
+        inputOperation.setAttribute('placeholder', 'Operation description');
+        inputOperation.setAttribute('minlength', '5');
+        divInputGroup.appendChild(inputOperation);
 
-    const divInputGroupAppend = document.createElement('div');
-    divInputGroupAppend.className = 'input-group-append';
-    divInputGroup.appendChild(divInputGroupAppend);
+        const divInputGroupAppend = document.createElement('div');
+        divInputGroupAppend.className = 'input-group-append';
+        divInputGroup.appendChild(divInputGroupAppend);
 
-    const btnInputGroupAppend = document.createElement("button");
-    btnInputGroupAppend.className = 'btn btn-info';
-    btnInputGroupAppend.innerText = 'Add';
-    divInputGroupAppend.appendChild(btnInputGroupAppend);
-    btnInputGroupAppend.addEventListener('click', (event) => {
-        apiCreateOperation(taskId, inputOperation.value).then(
-            function (response) {
-                renderOperation(ulListGroup, status, response.data.id, response.data.description, response.data.timeSpent);
-            }
-        );
-        inputOperation.value = null;
-        event.preventDefault();
-    })
+        const btnInputGroupAppend = document.createElement("button");
+        btnInputGroupAppend.className = 'btn btn-info';
+        btnInputGroupAppend.innerText = 'Add';
+        divInputGroupAppend.appendChild(btnInputGroupAppend);
+        btnInputGroupAppend.addEventListener('click', (event) => {
+            apiCreateOperation(taskId, inputOperation.value).then(
+                function (response) {
+                    renderOperation(ulListGroup, status, response.data.id, response.data.description, response.data.timeSpent);
+                }
+            );
+            inputOperation.value = null;
+            event.preventDefault();
+        })
+    }
 
     document.querySelector('main').appendChild(section);
 }
@@ -220,37 +248,39 @@ function renderOperation(ulEl, taskStatus, operationId, operationDescription, ti
     divOperationBtn.className = 'js-task-open-only';
     li.appendChild(divOperationBtn);
 
-    const btn15m = document.createElement('button');
-    btn15m.className = 'btn btn-outline-success btn-sm mr-2';
-    btn15m.innerText = '+15m';
-    divOperationBtn.appendChild(btn15m);
-    btn15m.addEventListener('click', function() {
-        let newTime = parseInt(timeSpent) + 15;
-        apiUpdateOperation(operationId, operationDescription, newTime).then((response) => {
-            btn15m.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
-            timeSpent = newTime;
+    if (taskStatus === 'open') {
+        const btn15m = document.createElement('button');
+        btn15m.className = 'btn btn-outline-success btn-sm mr-2';
+        btn15m.innerText = '+15m';
+        divOperationBtn.appendChild(btn15m);
+        btn15m.addEventListener('click', function() {
+            let newTime = parseInt(timeSpent) + 15;
+            apiUpdateOperation(operationId, operationDescription, newTime).then((response) => {
+                btn15m.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
+                timeSpent = newTime;
+            });
         });
-    });
 
-    const btn1h = document.createElement('button');
-    btn1h.className = 'btn btn-outline-success btn-sm mr-2';
-    btn1h.innerText = '+1h';
-    divOperationBtn.appendChild(btn1h);
-    btn1h.addEventListener('click', function() {
-        apiUpdateOperation(operationId, operationDescription, timeSpent + 60).then((response) => {
-            btn1h.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
-            timeSpent = parseInt(timeSpent) + 60;
+        const btn1h = document.createElement('button');
+        btn1h.className = 'btn btn-outline-success btn-sm mr-2';
+        btn1h.innerText = '+1h';
+        divOperationBtn.appendChild(btn1h);
+        btn1h.addEventListener('click', function() {
+            apiUpdateOperation(operationId, operationDescription, timeSpent + 60).then((response) => {
+                btn1h.parentElement.previousElementSibling.firstElementChild.innerHTML = showHourMinutes(response.data.timeSpent);
+                timeSpent = parseInt(timeSpent) + 60;
+            });
         });
-    });
 
-    const btnDel = document.createElement('button');
-    btnDel.className = 'btn btn-outline-danger btn-sm';
-    btnDel.innerText = 'Delete';
-    divOperationBtn.appendChild(btnDel);
-    btnDel.addEventListener('click', () => {
-        apiDeleteOperation(operationId);
-        btnDel.parentElement.parentElement.remove();
-    })
+        const btnDel = document.createElement('button');
+        btnDel.className = 'btn btn-outline-danger btn-sm';
+        btnDel.innerText = 'Delete';
+        divOperationBtn.appendChild(btnDel);
+        btnDel.addEventListener('click', () => {
+            apiDeleteOperation(operationId);
+            btnDel.parentElement.parentElement.remove();
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -260,11 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
     })
 
-    const btnAddTask = document.querySelector('form.js-task-adding-form');
-    btnAddTask.addEventListener('submit', function(event){
-        event.preventDefault();
-        apiCreateTask(event.target.elements.title.value, event.target.elements.description.value);
-    })
+    // const btnAddTask = document.querySelector('form.js-task-adding-form');
+    // btnAddTask.addEventListener('submit', function(event){
+    //     event.preventDefault();
+    //     apiCreateTask(event.target.elements.title.value, event.target.elements.description.value);
+    // })
 
     document.querySelector('.js-task-adding-form').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -278,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
 })
 
 function showHourMinutes(minutes) {
-    if (minutes > 60) {
+    if (minutes >= 60) {
         let hour = parseInt(minutes / 60);
         minutes = minutes % 60;
         return hour + 'h ' + minutes + 'm';
